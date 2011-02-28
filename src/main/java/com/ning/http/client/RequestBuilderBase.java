@@ -63,6 +63,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
         private boolean followRedirects;
         private PerRequestConfig perRequestConfig;
         private long rangeOffset = 0;
+        public SignatureCalculator signatureCalculator;
 
         public RequestImpl() {
         }
@@ -90,6 +91,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
                 this.followRedirects = prototype.isRedirectEnabled();
                 this.perRequestConfig = prototype.getPerRequestConfig();
                 this.rangeOffset = prototype.getRangeOffset();
+                this.signatureCalculator = prototype.getSignatureCalculator();
             }
         }
 
@@ -250,6 +252,10 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
             return rangeOffset;
         }
 
+        public SignatureCalculator getSignatureCalculator() {
+            return signatureCalculator;
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(url);
@@ -276,11 +282,24 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
         request.method = method;
     }
 
+    protected RequestBuilderBase(Class<T> derived, String method, SignatureCalculator signatureCalculator) {
+        this.derived = derived;
+        request = new RequestImpl();
+        request.method = method;
+        request.signatureCalculator = signatureCalculator;
+    }
+
     protected RequestBuilderBase(Class<T> derived, Request prototype) {
         this.derived = derived;
         request = new RequestImpl(prototype);
     }
-    
+
+    protected RequestBuilderBase(Class<T> derived, Request prototype, SignatureCalculator signatureCalculator) {
+        this.derived = derived;
+        request = new RequestImpl(prototype);
+        request.signatureCalculator = signatureCalculator;
+    }
+
     public T setUrl(String url) {
         request.url = buildUrl(url);
         return derived.cast(this);
@@ -503,8 +522,22 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
         return derived.cast(this);
     }
 
+    public T setSignatureCalculator(SignatureCalculator signatureCalculator) {
+        request.signatureCalculator = signatureCalculator;
+        return derived.cast(this);
+    }
 
     public Request build() {
+        SignatureCalculator calculator = request.signatureCalculator;
+        if (calculator != null) {
+            String url = request.url;
+            calculator.calculateAndAddSignature(
+                // TODO: validate, previous logic here always used baseURL, but also performed calculations for query params less URL.
+                url.contains("?") ? url.substring(0, url.indexOf('?')) : url,
+                request,
+                this
+            );
+        }
         if ((request.length < 0) && (request.streamData == null) &&
                 (("POST".equals(request.method)) || ("PUT".equals(request.method)))) {
             // can't concatenate content-length

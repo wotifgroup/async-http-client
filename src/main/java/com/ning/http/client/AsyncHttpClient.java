@@ -148,13 +148,6 @@ public class AsyncHttpClient {
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
     /**
-     * Default signature calculator to use for all requests constructed by this client instance.
-     * 
-     * @since 1.1
-     */
-    protected SignatureCalculator signatureCalculator;
-    
-    /**
      * Create a new HTTP Asynchronous Client using the default {@link AsyncHttpClientConfig} configuration. The
      * default {@link AsyncHttpProvider} will be used ({@link com.ning.http.client.providers.netty.NettyAsyncHttpProvider}
      */
@@ -204,17 +197,11 @@ public class AsyncHttpClient {
 
     public class BoundRequestBuilder extends RequestBuilderBase<BoundRequestBuilder> {
         /**
-         * Calculator used for calculating request signature for the request being
-         * built, if any.
-         */
-        protected SignatureCalculator signatureCalculator;
-
-        /**
          * URL used as the base, not including possibly query parameters. Needed for
          * signature calculation
          */
         protected String baseURL;
-        
+
         private BoundRequestBuilder(String reqType) {
             super(BoundRequestBuilder.class, reqType);
         }
@@ -262,18 +249,6 @@ public class AsyncHttpClient {
 
         @Override
         public Request build() {
-            /* Let's first calculate and inject signature, before finalizing actual build
-             * (order does not matter with current implementation but may in future)
-             */
-            if (signatureCalculator != null) {
-                String url = baseURL;
-                // Should not include query parameters, ensure:
-                int i = url.indexOf('?');
-                if (i >= 0) {
-                    url = url.substring(0, i);
-                }
-                signatureCalculator.calculateAndAddSignature(baseURL, request, this);
-            }
             return super.build();
         }
 
@@ -339,8 +314,7 @@ public class AsyncHttpClient {
         }
 
         public BoundRequestBuilder setSignatureCalculator(SignatureCalculator signatureCalculator) {
-            this.signatureCalculator = signatureCalculator;
-            return this;
+            return super.setSignatureCalculator(signatureCalculator);
         }
     }
 
@@ -382,9 +356,11 @@ public class AsyncHttpClient {
 
     /**
      * Set default signature calculator to use for requests build by this client instance
+     * @deprecated Please use {@link AsyncHttpClientConfig#setSignatureCalculator(SignatureCalculator)} instead.
      */
+    @Deprecated
     public AsyncHttpClient setSignatureCalculator(SignatureCalculator signatureCalculator) {
-        this.signatureCalculator = signatureCalculator;
+        config.setSignatureCalculator(signatureCalculator);
         return this;
     }
     
@@ -549,10 +525,20 @@ public class AsyncHttpClient {
     }
 
     protected BoundRequestBuilder requestBuilder(String reqType, String url) {
-        return new BoundRequestBuilder(reqType).setUrl(url).setSignatureCalculator(signatureCalculator);
+        BoundRequestBuilder builder = new BoundRequestBuilder(reqType).setUrl(url);
+        SignatureCalculator calculator = config.getSignatureCalculator();
+        if (calculator != null) {
+            builder.setSignatureCalculator(calculator);
+        }
+        return builder;
     }
 
     protected BoundRequestBuilder requestBuilder(Request prototype) {
-        return new BoundRequestBuilder(prototype).setSignatureCalculator(signatureCalculator);
+        BoundRequestBuilder builder = new BoundRequestBuilder(prototype);
+        SignatureCalculator calculator = getConfig().getSignatureCalculator();
+        if (calculator != null) {
+            builder.setSignatureCalculator(calculator);
+        }
+        return builder;
     }
 }

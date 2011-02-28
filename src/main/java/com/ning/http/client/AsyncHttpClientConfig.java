@@ -74,6 +74,8 @@ public class AsyncHttpClientConfig {
     private final int requestCompressionLevel;
     private final int maxRequestRetry;
     private final boolean allowSslConnectionPool;
+    // TODO: make signatureCalculator final once deprecated setSignatureCalculator is removed.
+    private /*final*/ SignatureCalculator signatureCalculator;
 
     private AsyncHttpClientConfig(int maxTotalConnections,
                                   int maxConnectionPerHost,
@@ -97,7 +99,8 @@ public class AsyncHttpClientConfig {
                                   List<IOExceptionFilter> ioExceptionFilters,
                                   int requestCompressionLevel,
                                   int maxRequestRetry,
-                                  boolean allowSslConnectionCaching) {
+                                  boolean allowSslConnectionCaching,
+                                  SignatureCalculator signatureCalculator) {
 
         this.maxTotalConnections = maxTotalConnections;
         this.maxConnectionPerHost = maxConnectionPerHost;
@@ -121,6 +124,7 @@ public class AsyncHttpClientConfig {
         this.maxRequestRetry = maxRequestRetry;
         this.reaper = reaper;
         this.allowSslConnectionPool = allowSslConnectionCaching;
+        this.signatureCalculator = signatureCalculator;
 
         if (applicationThreadPool == null) {
             this.applicationThreadPool = Executors.newCachedThreadPool();
@@ -374,6 +378,19 @@ public class AsyncHttpClientConfig {
         return allowSslConnectionPool;
     }
 
+    /**
+     * TODO: remove once deprecated AHC.setSignatureCalculator is removed.
+     * @return
+     * @deprecated Do not use, only added for {@link AsyncHttpClient#setSignatureCalculator(SignatureCalculator)}.
+     */
+    @Deprecated
+    public SignatureCalculator getSignatureCalculator() {
+        return signatureCalculator;
+    }
+
+    public void setSignatureCalculator(SignatureCalculator signatureCalculator) {
+        this.signatureCalculator = signatureCalculator;
+    }
 
     /**
      * Builder for an {@link AsyncHttpClient}
@@ -415,6 +432,7 @@ public class AsyncHttpClientConfig {
         private final List<ResponseFilter> responseFilters = new LinkedList<ResponseFilter>();
         private final List<IOExceptionFilter> ioExceptionFilters = new LinkedList<IOExceptionFilter>();
         private boolean allowSslConnectionPool = true;
+        private SignatureCalculator signatureCalculator = null;
 
         public Builder() {
         }
@@ -763,6 +781,16 @@ public class AsyncHttpClientConfig {
         }
 
         /**
+         * Sets {@link SignatureCalculator} globally.
+         * @param signatureCalculator Calculator to be used.
+         * @return Fluid interface.
+         */
+        public Builder setSignatureCalculator(SignatureCalculator signatureCalculator) {
+            this.signatureCalculator = signatureCalculator;
+            return this;
+        }
+
+        /**
          * Create a config builder with values taken from the given prototype configuration.
          * 
          * @param prototype the configuration to use as a prototype.
@@ -790,6 +818,8 @@ public class AsyncHttpClientConfig {
 
             requestFilters.addAll( prototype.getRequestFilters() );
             responseFilters.addAll( prototype.getResponseFilters() );
+
+            signatureCalculator = prototype.getSignatureCalculator();
         }
 
         /**
@@ -821,7 +851,8 @@ public class AsyncHttpClientConfig {
                     ioExceptionFilters,
                     requestCompressionLevel,
                     maxRequestRetry,
-                    allowSslConnectionPool);
+                    allowSslConnectionPool,
+                    signatureCalculator);
         }
     }
 }

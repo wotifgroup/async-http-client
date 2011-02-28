@@ -177,5 +177,9 @@ public interface Request {
      */
     public long getRangeOffset();
 
-
+    /**
+     * Gets {@link SignatureCalculator} for request.
+     * @return Calculator for request.
+     */
+    SignatureCalculator getSignatureCalculator();
 }
