@@ -172,13 +172,6 @@ public interface Request {
     public boolean isRedirectEnabled();
 
     /**
-     * Return Per request configuration.
-     *
-     * @return Per request configuration.
-     */
-    public PerRequestConfig getPerRequestConfig();
-
-    /**
      * Return the HTTP Range header value, or 
      * @return the range header value, or 0 is not set.
      */
@@ -190,4 +183,10 @@ public interface Request {
      */
     public String getBodyEncoding();
 
+    /**
+     * Return Request Time out in milliseconds.
+     *
+     * @return Request Timeout in ms.
+     */
+    public int getRequestTimeoutInMs();
 }

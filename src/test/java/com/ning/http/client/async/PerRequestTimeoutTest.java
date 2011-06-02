@@ -19,7 +19,6 @@ import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.PerRequestConfig;
 import com.ning.http.client.Response;
 import org.eclipse.jetty.continuation.Continuation;
 import org.eclipse.jetty.continuation.ContinuationSupport;
@@ -94,10 +93,8 @@ public abstract class PerRequestTimeoutTest extends AbstractBasicTest {
     @Test(groups = {"standalone", "default_provider"})
     public void testRequestTimeout() throws IOException {
         AsyncHttpClient client = getAsyncHttpClient(null);
-        PerRequestConfig requestConfig = new PerRequestConfig();
-        requestConfig.setRequestTimeoutInMs(100);
         Future<Response> responseFuture =
-                client.prepareGet(getTargetUrl()).setPerRequestConfig(requestConfig).execute();
+                client.prepareGet(getTargetUrl()).setRequestTimeoutInMs(100).execute();
         try {
             Response response = responseFuture.get(2000, TimeUnit.MILLISECONDS);
             assertNull(response);
@@ -116,10 +113,8 @@ public abstract class PerRequestTimeoutTest extends AbstractBasicTest {
     @Test(groups = {"standalone", "default_provider"})
     public void testGlobalDefaultPerRequestInfiniteTimeout() throws IOException {
         AsyncHttpClient client = getAsyncHttpClient(new AsyncHttpClientConfig.Builder().setRequestTimeoutInMs(100).build());
-        PerRequestConfig requestConfig = new PerRequestConfig();
-        requestConfig.setRequestTimeoutInMs(-1);
         Future<Response> responseFuture =
-                client.prepareGet(getTargetUrl()).setPerRequestConfig(requestConfig).execute();
+                client.prepareGet(getTargetUrl()).setRequestTimeoutInMs(-1).execute();
         try {
             Response response = responseFuture.get();
             assertNotNull(response);

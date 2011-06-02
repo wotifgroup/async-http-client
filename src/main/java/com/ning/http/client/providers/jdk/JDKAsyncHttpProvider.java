@@ -23,7 +23,6 @@ import com.ning.http.client.HttpResponseHeaders;
 import com.ning.http.client.HttpResponseStatus;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.MaxRedirectException;
-import com.ning.http.client.PerRequestConfig;
 import com.ning.http.client.ProgressAsyncHandler;
 import com.ning.http.client.ProxyServer;
 import com.ning.http.client.Realm;
@@ -35,7 +34,6 @@ import com.ning.http.client.filter.FilterException;
 import com.ning.http.client.filter.IOExceptionFilter;
 import com.ning.http.client.filter.ResponseFilter;
 import com.ning.http.client.listener.TransferCompletionHandler;
-import com.ning.http.client.providers.netty.NettyAsyncHttpProvider;
 import com.ning.http.multipart.MultipartRequestEntity;
 import com.ning.http.util.AsyncHttpProviderUtils;
 import com.ning.http.util.AuthenticatorUtils;
@@ -145,9 +143,8 @@ public class JDKAsyncHttpProvider implements AsyncHttpProvider {
 
         HttpURLConnection urlConnection = createUrlConnection(request);
 
-        PerRequestConfig conf = request.getPerRequestConfig();
-        int requestTimeout = (conf != null && conf.getRequestTimeoutInMs() != 0) ?
-                conf.getRequestTimeoutInMs() : config.getRequestTimeoutInMs();
+        int requestTimeout = (request.getRequestTimeoutInMs() != 0) ?
+                request.getRequestTimeoutInMs() : config.getRequestTimeoutInMs();
 
         JDKDelegateFuture delegate = null;
         if (future != null) {
@@ -435,8 +432,8 @@ public class JDKAsyncHttpProvider implements AsyncHttpProvider {
             if (SocketTimeoutException.class.isAssignableFrom(t.getClass())) {
                 int responseTimeoutInMs = config.getRequestTimeoutInMs();
 
-                if (request.getPerRequestConfig() != null && request.getPerRequestConfig().getRequestTimeoutInMs() != -1) {
-                    responseTimeoutInMs = request.getPerRequestConfig().getRequestTimeoutInMs();
+                if (request.getRequestTimeoutInMs() != 0) {
+                    responseTimeoutInMs = request.getRequestTimeoutInMs();
                 }
                 t = new TimeoutException(String.format("No response received after %s", responseTimeoutInMs));
             }
@@ -452,9 +449,8 @@ public class JDKAsyncHttpProvider implements AsyncHttpProvider {
 
         private void configure(URI uri, HttpURLConnection urlConnection, Request request) throws IOException, AuthenticationException {
 
-            PerRequestConfig conf = request.getPerRequestConfig();
-            int requestTimeout = (conf != null && conf.getRequestTimeoutInMs() != 0) ?
-                    conf.getRequestTimeoutInMs() : config.getRequestTimeoutInMs();
+            int requestTimeout = (request.getRequestTimeoutInMs() != 0) ?
+                    request.getRequestTimeoutInMs() : config.getRequestTimeoutInMs();
 
             urlConnection.setConnectTimeout(config.getConnectionTimeoutInMs());
 

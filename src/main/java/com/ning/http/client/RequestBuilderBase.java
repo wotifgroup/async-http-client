@@ -55,9 +55,9 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
         private Realm realm;
         private File file;
         private boolean followRedirects;
-        private PerRequestConfig perRequestConfig;
         private long rangeOffset = 0;
         public String charset;
+        public int requestTimeoutInMs = 0;
 
         public RequestImpl() {
         }
@@ -83,9 +83,9 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
                 this.realm = prototype.getRealm();
                 this.file = prototype.getFile();
                 this.followRedirects = prototype.isRedirectEnabled();
-                this.perRequestConfig = prototype.getPerRequestConfig();
                 this.rangeOffset = prototype.getRangeOffset();
                 this.charset = prototype.getBodyEncoding();
+                this.requestTimeoutInMs = prototype.getRequestTimeoutInMs();
             }
         }
 
@@ -247,16 +247,16 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
             return followRedirects;
         }
 
-        public PerRequestConfig getPerRequestConfig() {
-            return perRequestConfig;
-        }
-
         public long getRangeOffset() {
             return rangeOffset;
         }
 
         public String getBodyEncoding() {
             return charset;
+        }
+
+        public int getRequestTimeoutInMs(){
+            return requestTimeoutInMs;
         }
 
         @Override
@@ -511,11 +511,6 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
         return derived.cast(this);
     }
 
-    public T setPerRequestConfig(PerRequestConfig perRequestConfig) {
-        request.perRequestConfig = perRequestConfig;
-        return derived.cast(this);
-    }
-
     public T setRangeOffset(long rangeOffset) {
         request.rangeOffset = rangeOffset;
         return derived.cast(this);
@@ -528,6 +523,11 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
 
     public T setBodyEncoding(String charset) {
         request.charset = charset;
+        return derived.cast(this);
+    }
+
+    public T setRequestTimeoutInMs(int timeout) {
+        request.requestTimeoutInMs = timeout;
         return derived.cast(this);
     }
 
