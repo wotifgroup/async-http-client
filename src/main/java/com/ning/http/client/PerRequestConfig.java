@@ -21,20 +21,14 @@ package com.ning.http.client;
  * @author Hubert Iwaniuk
  */
 public class PerRequestConfig {
-    private final ProxyServer proxyServer;
     private int requestTimeoutInMs;
 
     public PerRequestConfig() {
-        this(null, 0);
+        this(0);
     }
     
-    public PerRequestConfig(ProxyServer proxyServer, int requestTimeoutInMs) {
-        this.proxyServer = proxyServer;
+    public PerRequestConfig(int requestTimeoutInMs) {
         this.requestTimeoutInMs = requestTimeoutInMs;
-    }
-
-    public ProxyServer getProxyServer() {
-        return proxyServer;
     }
 
     public int getRequestTimeoutInMs() {
