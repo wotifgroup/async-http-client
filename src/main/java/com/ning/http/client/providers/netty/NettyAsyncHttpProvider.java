@@ -2002,7 +2002,7 @@ public class NettyAsyncHttpProvider extends SimpleChannelUpstreamHandler impleme
 
                 int requestTimeout = config.getRequestTimeoutInMs();
                 PerRequestConfig p = this.nettyResponseFuture.getRequest().getPerRequestConfig();
-                if (p != null && p.getRequestTimeoutInMs() != -1) {
+                if (p != null && p.getRequestTimeoutInMs() != 0) {
                     requestTimeout = p.getRequestTimeoutInMs();
                 }
 
