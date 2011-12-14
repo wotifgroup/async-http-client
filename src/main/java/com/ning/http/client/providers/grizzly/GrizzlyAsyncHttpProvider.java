@@ -1081,9 +1081,9 @@ public class GrizzlyAsyncHttpProvider implements AsyncHttpProvider {
         }
 
         @Override
-        protected void onHttpError(final HttpHeader httpHeader,
-                                   final FilterChainContext ctx,
-                                   final Throwable t) throws IOException {
+        protected void onHttpHeaderError(final HttpHeader httpHeader,
+                                         final FilterChainContext ctx,
+                                         final Throwable t) throws IOException {
             t.printStackTrace();
             httpHeader.setSkipRemainder(true);
             final HttpTransactionContext context =
