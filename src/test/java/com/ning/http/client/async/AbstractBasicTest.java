@@ -77,8 +77,13 @@ public abstract class AbstractBasicTest {
                 param = e.nextElement().toString();
 
                 if (param.startsWith("LockThread")) {
+                    int sleep = 40 * 1000;
                     try {
-                        Thread.sleep(40 * 1000);
+                        sleep = Integer.parseInt(httpRequest.getHeader(param));
+                    } catch (NumberFormatException nfe) {
+                    }
+                    try {
+                        Thread.sleep(sleep);
                     } catch (InterruptedException ex) {
                     }
                 }
